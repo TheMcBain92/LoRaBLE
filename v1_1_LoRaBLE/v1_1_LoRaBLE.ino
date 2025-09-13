@@ -12,7 +12,9 @@
 
 // UNCOMMENT ONE AND ONLY ONE OF THESE LINES
 
-#define TBEAM
+//#define TBEAM
+//#define TBEAM_OLED
+#define TBEAM_V1_2_OLED
 // #define OLEDV1
 // #define OLEDV2
 // #define LORAGO
@@ -31,7 +33,7 @@
   #define AXP
   #define LORA_NSS           18
   #define LORA_RST           14
-  #define LORA_DIO0          26                
+  #define LORA_DIO0          26
   #define SCK                 5
   #define MISO               19
   #define MOSI               27
@@ -39,7 +41,52 @@
   #define GPS_TX             34
   #define GPS_RX             12
 #endif
-  
+
+#ifdef TBEAM_OLED
+  #define ESP32
+  #define BLUE
+  #define AXP
+  #define OLED
+  #define LED                 2
+  #define OLED_RST           16
+  #define OLED_SDA           21
+  #define OLED_SCL           22
+  #define SCREEN_WIDTH      128
+  #define SCREEN_HEIGHT      64
+  #define LORA_NSS           18
+  #define LORA_RST           14
+  #define LORA_DIO0          26
+  #define SCK                 5
+  #define MISO               19
+  #define MOSI               27
+  #define GPSSerial     Serial1
+  #define GPS_TX             34
+  #define GPS_RX             12
+#endif
+
+#ifdef TBEAM_V1_2_OLED
+  #define ESP32
+  #define BLUE
+  #define xpower
+  #define XPOWERS_CHIP_AXP2101
+  #define OLED
+  #define LED                 2
+  #define OLED_RST           16
+  #define OLED_SDA           21
+  #define OLED_SCL           22
+  #define SCREEN_WIDTH      128
+  #define SCREEN_HEIGHT      64
+  #define LORA_NSS           18
+  #define LORA_RST           14
+  #define LORA_DIO0          26
+  #define SCK                 5
+  #define MISO               19
+  #define MOSI               27
+  #define GPSSerial     Serial1
+  #define GPS_TX             34
+  #define GPS_RX             12
+#endif
+
 #ifdef OLEDV1
   #define ESP32
   #define BLUE
@@ -86,6 +133,10 @@
   #include <axp20x.h>
 #endif  
 
+#ifdef xpower
+  #include <XPowersLib.h>
+  XPowersPMU power;
+#endif
   
 //------
 //
@@ -104,7 +155,6 @@
   #include <Adafruit_SSD1306.h>
 #endif  
 
-
 #include <string.h>
 #include <ctype.h>
 #include <SPI.h>
@@ -112,7 +162,6 @@
 #include <Wire.h>
 
 // DEFINES
-
 
 char character;
 byte currentMode = 0x81;
@@ -129,8 +178,8 @@ struct TSettings
   int LowDataRateOptimize;
 } Settings;
 
+#define version "V1.1"
 #define EEPROM_SIZE (sizeof(Settings) + 2)
-
 
 #ifdef BLUE
   BLECharacteristic *pTxCharacteristic;
@@ -222,9 +271,9 @@ unsigned long LEDOff=0;
 #define LNA_OFF_GAIN                0x00
 
 
-//#ifdef BLUE
-//  BluetoothSerial SerialBT;
-//#endif  
+#ifdef BLUE
+  BluetoothSerial SerialBT;
+#endif  
 
 #ifdef AXP
   AXP20X_Class axp;
@@ -236,12 +285,12 @@ void SetParametersFromLoRaMode(int LoRaMode)
 {
   Settings.LowDataRateOptimize = 0;
 
-#ifdef OLED
-  display.setCursor(0,20);
-  display.print("Mode: ");
-  display.print(LoRaMode);
-  display.display();
-#endif
+  #ifdef OLED
+    display.setCursor(0,20);
+    display.print("Mode: ");
+    display.print(LoRaMode);
+    display.display();
+  #endif
   
   Settings.LoRaMode = LoRaMode;
   
@@ -307,11 +356,11 @@ void SetParametersFromLoRaMode(int LoRaMode)
 }
 
 #ifdef BLUE
-#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
-#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+  #define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
+  #define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+  #define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
-class MyServerCallbacks: public BLEServerCallbacks {
+  class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       Serial.println("BLE Connected");
       BLEConnected = true;
@@ -320,9 +369,9 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer* pServer) {
       BLEConnected = false;
     }
-};
+  };
 
-class MyCallbacks: public BLECharacteristicCallbacks {
+  class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       //std::string rxValue = pCharacteristic->getValue();
       String rxValue = pCharacteristic->getValue();
@@ -342,19 +391,18 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         ProcessCommand(Line);
       }
     }
-};
+  };
 #endif
 
 void LoadDefaults()
 {
-//  Settings.PPM = 0.0;
+  //Settings.PPM = 0.0;
   
-  Settings.Frequency = 434.325;
-//  Settings.Rx.ImplicitOrExplicit = 1;
-//  Settings.Rx.ErrorCoding = 5;
-//  Settings.Rx.Bandwidth = 3;
-//  Settings.Rx.SpreadingFactor = 6;
-
+  Settings.Frequency = 433.300;
+  //Settings.Rx.ImplicitOrExplicit = 1;
+  //Settings.Rx.ErrorCoding = 5;
+  //Settings.Rx.Bandwidth = 3;
+  //Settings.Rx.SpreadingFactor = 6;
 }
 
 void LoadSettings(void)
@@ -385,9 +433,9 @@ void StoreSettings(void)
     EEPROM.write(i+2, *ptr);
   }
 
-#ifdef ESP32
-  EEPROM.commit();
-#endif  
+  #ifdef ESP32
+    EEPROM.commit();
+  #endif  
 }
 
 
@@ -398,7 +446,8 @@ void setup()
   Serial.begin(57600);
   
   Serial.println("");
-  Serial.println("HAB LoRa Receiver V1.1");
+  Serial.print("HAB LoRa Receiver ");
+  Serial.println(version);
   Serial.println("");
 
   // EEPROM
@@ -409,6 +458,56 @@ void setup()
   #ifdef LED
     pinMode(LED, OUTPUT);
     digitalWrite(LED, 1);
+  #endif
+
+  #ifdef xpower
+    if (power.begin(Wire, AXP2101_SLAVE_ADDRESS, 21, 22))
+    {
+      Serial.println("AXP2101 Begin PASS");
+    }
+    else
+    {
+      Serial.println("AXP2101 Begin FAIL");
+    } 
+
+    power.setDC1Voltage(3300);
+    power.setDC2Voltage(500);
+    power.setDC3Voltage(3300);
+    power.setDC4Voltage(1800);
+    power.setALDO1Voltage(1800);
+    power.setALDO2Voltage(3300);
+    power.setALDO3Voltage(3300);
+    power.setALDO4Voltage(3300);
+    power.setBLDO1Voltage(1800);
+    power.setBLDO2Voltage(3300);
+    power.enableDC1();
+    power.enableDC2();
+    power.enableDC3();
+    power.enableALDO2();
+    power.enableALDO3();
+    power.enableBattDetection();
+    power.enableBattVoltageMeasure();
+    power.disableTSPinMeasure();
+    //power.setChargingLedMode(XPOWERS_CHG_LED_CTRL_CHG);
+
+    // Set the precharge charging current
+    power.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
+    // Set constant current charge current limit
+    power.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_1000MA);
+    // Set stop charging termination current
+    power.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
+    // Set charge cut-off voltage
+    power.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V2);
+    const uint16_t currTable[] = {
+      0, 0, 0, 0, 100, 125, 150, 175, 200, 300, 400, 500, 600, 700, 800, 900, 1000
+    };
+    uint8_t val = power.getChargerConstantCurr();
+    const uint16_t tableVoltage[] = {
+      0, 4000, 4100, 4200, 4350, 4400, 255
+    };
+    val = power.getChargeTargetVoltage();
+    //power.setSysPowerDownVoltage(2600);
+    printPMU();
   #endif
 
   #ifdef AXP
@@ -461,11 +560,12 @@ void setup()
     display.setTextColor(WHITE, 0);
     display.setTextSize(1);
     display.setCursor(0,0);
-    display.print("LoRa Receiver V1.0");
+    display.print("LoRa Receiver ");
+    display.print(version);
 
     #ifdef BLUE
-//      display.setCursor(0,32);
-//      display.print(" BT Device ");  display.print(BT_DEVICE);
+      //display.setCursor(0,32);
+      //display.print(" BT Device ");  display.print(BT_DEVICE);
       display.setCursor(0,42);
       display.print("BLE Device ");  display.print(BLE_DEVICE);
     #endif
@@ -544,19 +644,55 @@ void setup()
 void loop()
 {
   CheckPC();
-
-#ifdef BLUE
-  CheckBT();
-#endif
-  
-  CheckRx();
-  
+  #ifdef BLUE
+    CheckBT();
+  #endif  
+  CheckRx();  
   #ifdef GPSSerial
     CheckGPS();
   #endif
-
   UpdateClient();
 }
+
+#ifdef xpower
+void printPMU()
+{
+  Serial.println("---------------------------------------------------------------------------------------------------------");
+  Serial.println("Satus1  Satus2  CHARG   DISC   STBY    VBUSIN    VGOOD    VBAT   VBUS   VSYS   Percentage    CHG_STATUS");
+  Serial.println("(Bin)   (Bin)   (bool)  (bool) (bool)  (bool)    (bool)   (mV)   (mV)   (mV)      (%)           (str)  ");
+  Serial.println("---------------------------------------------------------------------------------------------------------");
+  uint16_t statusVal =  power.status();
+  Serial.print("0b"); Serial.print(statusVal >> 8, BIN); Serial.print("\t");
+  Serial.print("0b"); Serial.print(statusVal & 0xFF, BIN); Serial.print("\t");
+  Serial.print(power.isCharging() ? "YES" : "NO "); Serial.print("\t");
+  Serial.print(power.isDischarge() ? "YES" : "NO "); Serial.print("\t");
+  Serial.print(power.isStandby() ? "YES" : "NO "); Serial.print("\t");
+  Serial.print(power.isVbusIn() ? "YES" : "NO "); Serial.print("\t");
+  Serial.print(power.isVbusGood() ? "YES" : "NO "); Serial.print("\t");
+  Serial.print(power.getBattVoltage());     Serial.print("\t");
+  Serial.print(power.getVbusVoltage());     Serial.print("\t");
+  Serial.print(power.getSystemVoltage());   Serial.print("\t");
+  // The battery percentage may be inaccurate at first use, the PMU will automatically
+  // learn the battery curve and will automatically calibrate the battery percentage
+  // after a charge and discharge cycle
+  Serial.print(power.getBatteryPercent()); Serial.print("\t");
+  uint8_t charge_status = power.getChargerStatus();
+  if (charge_status == XPOWERS_AXP2101_CHG_TRI_STATE) {
+      Serial.println("tri_charge");
+  } else if (charge_status == XPOWERS_AXP2101_CHG_PRE_STATE) {
+      Serial.println("pre_charge");
+  } else if (charge_status == XPOWERS_AXP2101_CHG_CC_STATE) {
+      Serial.println("constant charge(CC)");
+  } else if (charge_status == XPOWERS_AXP2101_CHG_CV_STATE) {
+      Serial.println("constant voltage(CV)");
+  } else if (charge_status == XPOWERS_AXP2101_CHG_DONE_STATE) {
+      Serial.println("charge done");
+  } else if (charge_status == XPOWERS_AXP2101_CHG_STOP_STATE) {
+      Serial.println("not charge");
+  }
+  Serial.println();
+}
+#endif
 
 void UpdateClient(void)
 {
@@ -639,7 +775,6 @@ double FrequencyReference(void)
   return 0;
 }
 
-
 double FrequencyError(void)
 {
   int32_t Temp;
@@ -712,7 +847,7 @@ void ReplyOK(void)
 
 void ReplyBad(void)
 {
-  SendToHosts("?");
+  SendToHosts("Unknown Command");
   // Serial.println('?');
   // SerialBT.println('?');
 }
@@ -955,6 +1090,12 @@ void ProcessCommand(char *Line)
   {
     SetLowOpt(Line);
   }
+  else if (Command == 'C')
+  {
+    #ifdef xpower
+    printPMU();
+    #endif
+  }
   else
   {
     ReplyBad();
@@ -999,7 +1140,6 @@ void CheckPC()
 #ifdef BLUE
 void CheckBT()
 {
-  /*
   static char Line[32];
   static int Length=0;
   char Character;
@@ -1031,19 +1171,18 @@ void CheckBT()
       }
     }
   }
-  */
 }
 #endif
 
 void CheckRx()
 {
-#ifdef LED
-  if ((LEDOff > 0) && (millis() >= LEDOff))
-  {
-    digitalWrite(LED, LOW);
-    LEDOff = 0;
-  }
-#endif
+  #ifdef LED
+    if ((LEDOff > 0) && (millis() >= LEDOff))
+    {
+      digitalWrite(LED, LOW);
+      LEDOff = 0;
+    }
+  #endif
   
   if (digitalRead(LORA_DIO0))
   {
@@ -1079,10 +1218,10 @@ void CheckRx()
       RSSI += SNR;
     }
     
-//    Serial.print("PacketRSSI="); Serial.println(RSSI);
-//    Serial.print("PacketSNR="); Serial.println(SNR);
-//    SerialBT.print("PacketRSSI="); SerialBT.println(RSSI);
-//    SerialBT.print("PacketSNR="); SerialBT.println(SNR);
+    //    Serial.print("PacketRSSI="); Serial.println(RSSI);
+    //    Serial.print("PacketSNR="); Serial.println(SNR);
+    //    SerialBT.print("PacketRSSI="); SerialBT.println(RSSI);
+    //    SerialBT.print("PacketSNR="); SerialBT.println(SNR);
     sprintf(Line, "PacketRSSI=%d\r\n", RSSI);
     SendToHosts(Line);
     sprintf(Line, "PacketSNR=%d\r\n", SNR);
@@ -1094,37 +1233,37 @@ void CheckRx()
 
     if (Message[0] == '$')
     {
-       char ShortMessage[21];
-       char Line[256];
+      char ShortMessage[21];
+      char Line[256];
        
       // Remove LF
       Message[strlen((char *)Message)-1] = '\0';
       
-//      Serial.print("Message=");
-//      Serial.println((char *)Message);
-//      SerialBT.print("Message=");
-//      SerialBT.println((char *)Message);
+      //Serial.print("Message=");
+      //Serial.println((char *)Message);
+      //SerialBT.print("Message=");
+      //SerialBT.println((char *)Message);
       sprintf(Line, "Message=%s\r\n", Message);
       SendToHosts(Line);
           
-#ifdef OLED
-      strncpy(ShortMessage, (char *)Message, 20);
-      ShortMessage[20] = '\0';
-      display.setCursor(0,32);
-      display.print(ShortMessage);
+      #ifdef OLED
+        strncpy(ShortMessage, (char *)Message, 20);
+        ShortMessage[20] = '\0';
+        display.setCursor(0,32);
+        display.print(ShortMessage);
       
-      strncpy(ShortMessage, (char *)Message+20, 20);
-      ShortMessage[20] = '\0';
-      display.setCursor(0,42);
-      display.print(ShortMessage);
+        strncpy(ShortMessage, (char *)Message+20, 20);
+        ShortMessage[20] = '\0';
+        display.setCursor(0,42);
+        display.print(ShortMessage);
       
-      strncpy(ShortMessage, (char *)Message+40, 20);
-      ShortMessage[20] = '\0';
-      display.setCursor(0,52);
-      display.print(ShortMessage);
+        strncpy(ShortMessage, (char *)Message+40, 20);
+        ShortMessage[20] = '\0';
+        display.setCursor(0,52);
+        display.print(ShortMessage);
 
-      display.display();          
-#endif      
+        display.display();          
+      #endif      
     }
     else if (Message[0] == '%')
     {
@@ -1138,10 +1277,10 @@ void CheckRx()
         if ((ptr2 = strchr(ptr, '\n')) != NULL)
         {
           *ptr2 = '\0';
-//          Serial.print("Message=");
-//          Serial.println(ptr);
-//          SerialBT.print("Message=");
-//          SerialBT.println(ptr);
+          //Serial.print("Message=");
+          //Serial.println(ptr);
+          //SerialBT.print("Message=");
+          //SerialBT.println(ptr);
           SendToHosts("Message");
           SendToHosts((char *)Message);
           //SendToHosts("\r\n");
@@ -1152,27 +1291,27 @@ void CheckRx()
     else
     {
       Serial.print("Hex=");
-#ifdef BLUE
-      // SerialBT.print("Hex=");
-#endif      
+      #ifdef BLUE
+        //SerialBT.print("Hex=");
+      #endif      
       for (i=0; i<Bytes; i++)
       {
         if (Message[i] < 0x10)
         {
           Serial.print("0");
-#ifdef BLUE
-          // SerialBT.print("0");
-#endif          
+          #ifdef BLUE
+            //SerialBT.print("0");
+          #endif          
         } 
         Serial.print(Message[i], HEX);
-#ifdef BLUE
-        // SerialBT.print("0");
-#endif          
+        #ifdef BLUE
+          //SerialBT.print("0");
+        #endif          
       }
       Serial.println();
-#ifdef BLUE
-      // SerialBT.println();
-#endif          
+      #ifdef BLUE
+        //SerialBT.println();
+      #endif          
     }
   }
 }
@@ -1265,16 +1404,16 @@ void SetLoRaFrequency()
   Temp = Settings.Frequency * 7110656 / 434;
   FrequencyValue = (unsigned long)(Temp);
 
-//  Serial.print("FrequencyValue is ");
-//  Serial.println(FrequencyValue);
+  //Serial.print("FrequencyValue is ");
+  //Serial.println(FrequencyValue);
 
-#ifdef OLED
-  display.setCursor(0,10);
-  display.print("Freq: ");
-  display.print(Settings.Frequency, 4);
-  display.print(" MHz");
-  display.display();
-#endif
+  #ifdef OLED
+    display.setCursor(0,10);
+    display.print("Freq: ");
+    display.print(Settings.Frequency, 4);
+    display.print(" MHz");
+    display.display();
+  #endif
 
   writeRegister(0x06, (FrequencyValue >> 16) & 0xFF);    // Set frequency
   writeRegister(0x07, (FrequencyValue >> 8) & 0xFF);
@@ -1321,11 +1460,11 @@ void setupRFM98(void)
   pinMode(LORA_NSS, OUTPUT);
   pinMode(LORA_DIO0, INPUT);
 
-#ifdef ESP32
-  SPI.begin(SCK,MISO,MOSI,LORA_NSS);
-#else
-  SPI.begin();
-#endif
+  #ifdef ESP32
+    SPI.begin(SCK,MISO,MOSI,LORA_NSS);
+  #else
+    SPI.begin();
+  #endif
 
   startReceiving();
   

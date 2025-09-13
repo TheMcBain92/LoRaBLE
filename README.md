@@ -25,7 +25,7 @@ These libraries can be added via the Ardunio IDE menu: Sketch -> Include Library
 Serial Protocol
 ===============
 
-The same protocol is used over USB, Bluetooth and BLE.  It accepts commands of the form
+The same protocol is used over USB, Bluetooth and BLE.  It Sends commands of the form
 
 something=value<CR><LF>
 
@@ -40,7 +40,9 @@ The somethings are, currently:
 
 The serial interface accepts a few commands, each of the form
 
-~<command><value><CR>
+~*command*value*<CR>
+
+EG ~F433.3
 
 (a trailing <LF> can be sent but is ignored).  Accepted commands are responded to with an OK (* <CR> <LF>) and rejected commands (unknown command, or invalid command value) with "Unknown Command <CR> <LF>"
 

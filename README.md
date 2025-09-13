@@ -15,7 +15,11 @@ For boards that use the AXP202X power chip, ie the TTGO V1+ T-Beam, the AXP202X 
 
 https://github.com/lewisxhe/AXP202X_Library
 
-This library can be added via the Ardunio IDE menu: Sketch -> Include Library -> Add .zip Library…
+For boards that use the AXP2101 power chip, ie the T-Beam v1.2, the XPowersLib Library is required:
+
+https://github.com/lewisxhe/XPowersLib
+
+These libraries can be added via the Ardunio IDE menu: Sketch -> Include Library -> Add .zip Library…
 
 
 Serial Protocol
@@ -38,7 +42,7 @@ The serial interface accepts a few commands, each of the form
 
 ~<command><value><CR>
 
-(a trailing <LF> can be sent but is ignored).  Accepted commands are responded to with an OK (* <CR> <LF>) and rejected commands (unknown command, or invalid command value) with a WTF (? <CR> <LF>)
+(a trailing <LF> can be sent but is ignored).  Accepted commands are responded to with an OK (* <CR> <LF>) and rejected commands (unknown command, or invalid command value) with "Unknown Command <CR> <LF>"
 
 The current commands are:
 
@@ -49,11 +53,14 @@ The current commands are:
 	- S<spreading factor from 6 to 11>
 	- I<1=implicit mode, 0=explicit mode>
 	- L(low data rate optimisation: 1=enable, 0=disable)
+	- C (Displays a PMU Power Managment Unit Report on the Serial Output)
 
 The supported modes are:
 
 0 = (normal for telemetry)  Explicit mode, Error coding 4:8, Bandwidth 20.8kHz, SF 11, Low data rate optimize on
+
 1 = (normal for SSDV)       Implicit mode, Error coding 4:5, Bandwidth 20.8kHz,  SF 6, Low data rate optimize off
+
 2 = (normal for repeater)   Explicit mode, Error coding 4:8, Bandwidth 62.5kHz,  SF 8, Low data rate optimize off	
 
 Bandwidth value strings can be 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K
@@ -61,8 +68,14 @@ Bandwidth value strings can be 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 2
 History
 =======
 
-23/09/2016	V1.1	- Added Hex=... message for any packet that is not ASCII telemetry
-					- Added LoRa modes 3-7K8
-					- Increased baud rate to 57,600 (from 9,600) so handle high LoRa data rates esp. with SSDV
+23/09/2016	V1.1	- Updated to Support T-Beam v1.2
+						AXP PMC Hardware updated from AXP192 to AXP2101 in v1.2 of the T-BEAM.
+						AXP202X replaced with XPowersLib to support the AXP2101
 					
-30/06/2016	V1.0	- First version
+30/06/2016	V1.0	- First version Forked from https://github.com/daveake/LoRaBLE at V1.1
+					
+					- Added device TBEAM_OLED
+						Enables OLED screen fitted to T-BEAM
+					
+					- Updated to compile after arduino-esp32 BLE upgraded
+						https://github.com/espressif/arduino-esp32/pull/8724

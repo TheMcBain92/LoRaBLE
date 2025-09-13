@@ -38,9 +38,9 @@ The somethings are, currently:
 	- PacketRSSI=<RSSI>
 	- PacketSNR=<SNR>
 
-The serial interface accepts a few commands, each of the form
+The serial interface accepts a few commands, each of the form:
 
-~*command*value*<CR>
+~commandvalue<CR>
 
 EG ~F433.3
 

@@ -68,11 +68,13 @@ Bandwidth value strings can be 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 2
 History
 =======
 
-23/09/2016	V1.1	- Updated to Support T-Beam v1.2
+13/09/2025	V1.1	- Updated to Support T-Beam v1.2
+
 						AXP PMC Hardware updated from AXP192 to AXP2101 in v1.2 of the T-BEAM.
+						
 						AXP202X replaced with XPowersLib to support the AXP2101
 					
-30/06/2016	V1.0	- First version Forked from https://github.com/daveake/LoRaBLE at V1.1
+13/09/2025	V1.0	- First version Forked from https://github.com/daveake/LoRaBLE at V1.1
 					
 					- Added device TBEAM_OLED
 						Enables OLED screen fitted to T-BEAM

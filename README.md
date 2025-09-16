@@ -8,19 +8,15 @@ To build LoraBluetooth you may need various libraries into your Arduino IDE.  Fo
 
 	- Adafruit GFX Library
 	- Adafruit SSD1306 Library
+	
+	For boards that use the AXP2101 power chip, ie the T-Beam v1.2, the XPowersLib Library is required:
+	- XPowersLib
+	
+	For boards that use the AXP202X power chip, ie the TTGO V1+ T-Beam, the AXP202X Library is required:
+	- AXP202X_Library
 
 These Libraries can be added via the Ardunio IDE menu: Sketch -> Include Library -> Manage Libraries…
-
-For boards that use the AXP202X power chip, ie the TTGO V1+ T-Beam, the AXP202X Library is required:
-
-https://github.com/lewisxhe/AXP202X_Library
-
-For boards that use the AXP2101 power chip, ie the T-Beam v1.2, the XPowersLib Library is required:
-
-https://github.com/lewisxhe/XPowersLib
-
-These libraries can be added via the Ardunio IDE menu: Sketch -> Include Library -> Add .zip Library…
-
+And then searching the name of each Library that you need/
 
 Serial Protocol
 ===============

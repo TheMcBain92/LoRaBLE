@@ -734,7 +734,7 @@ void UpdateClient(void)
     0xfd, 0x7e, 
     0xfd, 0x7e, 
     0xfc, 0x7e
-  }
+  };
 
     static const unsigned char PROGMEM image_blnk_Saraarray[] = {
     0xff, 0xfe, 
@@ -753,7 +753,7 @@ void UpdateClient(void)
     0xff, 0xfe, 
     0xff, 0xfe, 
     0xff, 0xfe
-  }
+  };
 
   #ifdef OLED
     sprintf(Line, "RSSI: %3d ", CurrentRSSI);

@@ -85,6 +85,8 @@
   #define GPSSerial     Serial1
   #define GPS_TX             34
   #define GPS_RX             12
+  // #define GPS_TX             12
+  // #define GPS_RX             34
 #endif
 
 #ifdef OLEDV1
@@ -472,7 +474,7 @@ void setup()
 
     power.setDC1Voltage(3300);
     power.setDC2Voltage(500);
-    power.setDC3Voltage(3300);
+    power.setDC3Voltage(500);
     power.setDC4Voltage(1800);
     power.setALDO1Voltage(1800);
     power.setALDO2Voltage(3300);
@@ -483,8 +485,13 @@ void setup()
     power.enableDC1();
     power.enableDC2();
     power.enableDC3();
+    power.enableDC4();
+    power.enableALDO1();
     power.enableALDO2();
     power.enableALDO3();
+    power.enableALDO4();
+    power.enableBLDO1();
+    power.enableBLDO2();
     power.enableBattDetection();
     power.enableBattVoltageMeasure();
     power.disableTSPinMeasure();

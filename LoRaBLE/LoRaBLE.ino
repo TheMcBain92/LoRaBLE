@@ -782,7 +782,6 @@ void UpdateClient(void)
       0x00, 0x00, 
       0x00, 0x00, 
       0x00, 0x00, 
-      0x00, 0x00, 
       0x00, 0x00
     };
   #endif
@@ -800,8 +799,6 @@ void UpdateClient(void)
       display.setCursor(0,53);
       display.print(powerLine);
       uint8_t charge_status = power.getChargerStatus();
-      display.drawBitmap(108, 50, image_blnk_Saraarray, 15, 15, 1);
-      display.display();
       if (power.isBatteryConnect())
       {
         if (power.isCharging())

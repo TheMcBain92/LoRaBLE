@@ -766,6 +766,25 @@ void UpdateClient(void)
       0x1f, 0xf0, 
       0x00, 0x00
     };
+
+    static const unsigned char PROGMEM image_blnk_Saraarray[] = {
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00, 
+      0x00, 0x00
+    };
   #endif
 
   #ifdef OLED
@@ -776,16 +795,25 @@ void UpdateClient(void)
       int batpecnt;
       char powerLine[20];
       batpecnt = power.getBatteryPercent();
-      sprintf(powerLine, "Battery %= ", batpecnt, "%%");
-      // SendToHosts(powerLine);
-      display.setCursor(0,52);
+      sprintf(powerLine, "Battery: %3d ", batpecnt, "%%");
+      //SendToHosts(powerLine);
+      display.setCursor(0,53);
       display.print(powerLine);
       uint8_t charge_status = power.getChargerStatus();
+      display.drawBitmap(108, 50, image_blnk_Saraarray, 15, 15, 1);
+      display.display();
       if (power.isBatteryConnect())
       {
         if (power.isCharging())
         {
+          if (power.getBatteryPercent() == 100)
+          {
+            display.drawBitmap(108, 50, image_usb_Saraarray, 15, 15, 1);
+          }
+          else
+          {
           display.drawBitmap(108, 50, image_charging_Saraarray, 15, 15, 1);
+          }
         }
         else
         {

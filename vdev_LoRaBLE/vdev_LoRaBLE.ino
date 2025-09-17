@@ -711,45 +711,62 @@ void UpdateClient(void)
     sprintf(Line, "CurrentRSSI=%d\r\n", CurrentRSSI);
     SendToHosts(Line);
 
+  #ifdef xpower
+    //Images for Power Icon
+    static const unsigned char PROGMEM image_charging_Saraarray[] = {
+      0x00, 0x00, 
+      0x07, 0xc0, 
+      0x1f, 0xf0, 
+      0x10, 0x10, 
+      0x10, 0xd0, 
+      0x11, 0x90, 
+      0x13, 0x10, 
+      0x16, 0x10, 
+      0x17, 0x90, 
+      0x11, 0x90, 
+      0x13, 0x10, 
+      0x16, 0x10, 
+      0x14, 0x10, 
+      0x1f, 0xf0, 
+      0x00, 0x00
+    };
 
+    static const unsigned char PROGMEM image_usb_Saraarray[] = {
+      0x18, 0x30, 
+      0x18, 0x30, 
+      0x18, 0x30, 
+      0x18, 0x30, 
+      0xff, 0xfe, 
+      0x80, 0x02, 
+      0x80, 0x02, 
+      0x40, 0x04, 
+      0x40, 0x04, 
+      0x20, 0x08, 
+      0x18, 0x30, 
+      0x07, 0xc0, 
+      0x02, 0x80, 
+      0x02, 0x80, 
+      0x03, 0x80
+    };
 
-  static const unsigned char PROGMEM image_charging_Saraarray[] = {
-    0x18, 0x30, 
-    0x18, 0x30, 
-    0x18, 0x30, 
-    0x18, 0x30, 
-    0xff, 0xfe, 
-    0x80, 0x02, 
-    0x80, 0x02, 
-    0x40, 0x04, 
-    0x40, 0x04, 
-    0x20, 0x08, 
-    0x18, 0x30, 
-    0x07, 0xc0, 
-    0x02, 0x80, 
-    0x02, 0x80, 
-    0x02, 0x80, 
-    0x03, 0x80
-  };
-
-    static const unsigned char PROGMEM image_blnk_Saraarray[] = {
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00, 
-    0x00, 0x00
-  };
+    static const unsigned char PROGMEM image_battery_Saraarray[] = {
+      0x00, 0x00, 
+      0x07, 0xc0, 
+      0x1f, 0xf0, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x1f, 0xf0, 
+      0x00, 0x00
+    };
+  #endif
 
   #ifdef OLED
     sprintf(Line, "RSSI: %3d ", CurrentRSSI);
@@ -757,19 +774,27 @@ void UpdateClient(void)
     display.print(Line);
     #ifdef xpower
       int batpecnt;
-      char Line2[20];
+      char powerLine[20];
       batpecnt = power.getBatteryPercent();
-      sprintf(Line2, "Battery=%d\r\n ", batpecnt, "%");
-      // SendToHosts(Line2);
+      sprintf(powerLine, "Battery %= ", batpecnt, "%%");
+      // SendToHosts(powerLine);
       display.setCursor(0,52);
-      display.print(Line2);
-      if (power.isCharging())
+      display.print(powerLine);
+      uint8_t charge_status = power.getChargerStatus();
+      if (power.isBatteryConnect())
       {
-        display.drawBitmap(108, 50, image_charging_Saraarray, 15, 16, 1);
+        if (power.isCharging())
+        {
+          display.drawBitmap(108, 50, image_charging_Saraarray, 15, 15, 1);
+        }
+        else
+        {
+        display.drawBitmap(108, 50, image_battery_Saraarray, 15, 15, 1);
+        }
       }
       else
       {
-        display.drawBitmap(108, 50, image_blnk_Saraarray, 15, 16, 1);
+        display.drawBitmap(108, 50, image_usb_Saraarray, 15, 15, 1);
       }
     #endif
     display.display();

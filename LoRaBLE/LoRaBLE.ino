@@ -163,6 +163,15 @@
 
 // DEFINES
 
+#if defined TBEAM || defined TBEAM_OLED || defined TBEAM_V1_2_OLED
+const uint8_t InterruptPin = 38;
+#endif
+
+#ifdef OLED
+bool screensvereq;
+bool screensveste;
+#endif
+
 char character;
 byte currentMode = 0x81;
 unsigned long UpdateClientAt=0;
@@ -178,7 +187,7 @@ struct TSettings
   int LowDataRateOptimize;
 } Settings;
 
-#define version "V1.1"
+#define version "Vdev"
 #define EEPROM_SIZE (sizeof(Settings) + 2)
 
 #ifdef BLUE
@@ -280,6 +289,29 @@ unsigned long LEDOff=0;
 #endif
 
 char Hex[] = "0123456789ABCDEF";
+
+#ifdef OLED
+void sleepDisplay(Adafruit_SSD1306* display) {
+  display->ssd1306_command(SSD1306_DISPLAYOFF);
+  return;
+}
+
+void wakeDisplay(Adafruit_SSD1306* display) {
+  display->ssd1306_command(SSD1306_DISPLAYON);
+  return;
+}
+#endif
+
+void IRAM_ATTR isr() {
+ if (screensvereq == true)
+ {
+  screensvereq = false;
+ }
+ else
+ {
+  screensvereq = true;
+ }
+}
 
 void SetParametersFromLoRaMode(int LoRaMode)
 {
@@ -449,6 +481,12 @@ void setup()
   Serial.print("HAB LoRa Receiver ");
   Serial.println(version);
   Serial.println("");
+
+  #if defined TBEAM || defined TBEAM_OLED || defined TBEAM_V1_2_OLED
+  pinMode(InterruptPin, INPUT);
+  attachInterrupt(InterruptPin, isr, RISING);
+  screensvereq = false;
+  #endif
 
   // EEPROM
   #ifdef ESP32
@@ -650,6 +688,26 @@ void loop()
     CheckGPS();
   #endif
   UpdateClient();
+  #if defined TBEAM || defined TBEAM_OLED || defined TBEAM_V1_2_OLED
+  if (!screensvereq == screensveste)
+  {
+    if (screensvereq == true)
+    {
+      screensveste = true;
+      Serial.println("Display Off");
+      sleepDisplay(&display);
+    }
+    else
+    {
+      screensveste = false;
+      Serial.println("Display On");
+      wakeDisplay(&display);
+      digitalWrite(OLED_RST, LOW);
+      delay(20);
+      digitalWrite(OLED_RST, HIGH);  
+    }
+  }
+  #endif
 }
 
 #ifdef xpower
@@ -749,7 +807,7 @@ void UpdateClient(void)
       0x03, 0x80
     };
 
-    static const unsigned char PROGMEM image_battery_Saraarray[] = {
+    static const unsigned char PROGMEM image_battery0_Saraarray[] = {
       0x00, 0x00, 
       0x07, 0xc0, 
       0x1f, 0xf0, 
@@ -767,21 +825,75 @@ void UpdateClient(void)
       0x00, 0x00
     };
 
-    static const unsigned char PROGMEM image_blnk_Saraarray[] = {
+    static const unsigned char PROGMEM image_battery25_Saraarray[] = {
       0x00, 0x00, 
+      0x07, 0xc0, 
+      0x1f, 0xf0, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x00, 0x00
+    };
+
+    static const unsigned char PROGMEM image_battery50_Saraarray[] = {
       0x00, 0x00, 
+      0x07, 0xc0, 
+      0x1f, 0xf0, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x10, 0x10, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x00, 0x00
+    };
+
+    static const unsigned char PROGMEM image_battery100_Saraarray[] = {
       0x00, 0x00, 
+      0x07, 0xc0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x1f, 0xf0, 
+      0x00, 0x00
+    };
+
+    static const unsigned char PROGMEM image_error_Saraarray[] = {
       0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
-      0x00, 0x00, 
+      0x07, 0xc0, 
+      0x1f, 0xf0, 
+      0x10, 0x10, 
+      0x14, 0x50, 
+      0x12, 0x90, 
+      0x12, 0x90, 
+      0x11, 0x10, 
+      0x11, 0x10, 
+      0x12, 0x90, 
+      0x12, 0x90, 
+      0x14, 0x50, 
+      0x10, 0x10, 
+      0x1f, 0xf0, 
       0x00, 0x00
     };
   #endif
@@ -794,31 +906,53 @@ void UpdateClient(void)
       int batpecnt;
       char powerLine[20];
       batpecnt = power.getBatteryPercent();
-      sprintf(powerLine, "Battery: %3d ", batpecnt, "%%");
+      sprintf(powerLine, "Battery: %3d ", batpecnt);
       //SendToHosts(powerLine);
       display.setCursor(0,53);
       display.print(powerLine);
-      uint8_t charge_status = power.getChargerStatus();
       if (power.isBatteryConnect())
       {
         if (power.isCharging())
         {
-          if (power.getBatteryPercent() == 100)
-          {
-            display.drawBitmap(108, 50, image_usb_Saraarray, 15, 15, 1);
-          }
-          else
-          {
+          display.drawRect(108, 50, 15, 15, BLACK);
+          display.fillRect(108, 50, 15, 15, BLACK);
           display.drawBitmap(108, 50, image_charging_Saraarray, 15, 15, 1);
-          }
+        }
+        else if (power.getBatteryPercent() >= 80)
+        {
+          display.drawRect(108, 50, 15, 15, BLACK);
+          display.fillRect(108, 50, 15, 15, BLACK);
+          display.drawBitmap(108, 50, image_battery100_Saraarray, 15, 15, 1);
+        }
+        else if (power.getBatteryPercent() >= 50 && power.getBatteryPercent() < 80)
+        {
+          display.drawRect(108, 50, 15, 15, BLACK);
+          display.fillRect(108, 50, 15, 15, BLACK);
+          display.drawBitmap(108, 50, image_battery50_Saraarray, 15, 15, 1);
+        }
+        else if (power.getBatteryPercent() >= 25 && power.getBatteryPercent() < 50)
+        {
+          display.drawRect(108, 50, 15, 15, BLACK);
+          display.fillRect(108, 50, 15, 15, BLACK);
+          display.drawBitmap(108, 50, image_battery25_Saraarray, 15, 15, 1);
+        }
+        else if (power.getBatteryPercent() < 25)
+        {
+          display.drawRect(108, 50, 15, 15, BLACK);
+          display.fillRect(108, 50, 15, 15, BLACK);
+          display.drawBitmap(108, 50, image_battery0_Saraarray, 15, 15, 1);
         }
         else
         {
-        display.drawBitmap(108, 50, image_battery_Saraarray, 15, 15, 1);
+          display.drawRect(108, 50, 15, 15, BLACK);
+          display.fillRect(108, 50, 15, 15, BLACK);
+          display.drawBitmap(108, 50, image_error_Saraarray, 15, 15, 1);
         }
       }
       else
       {
+        display.drawRect(108, 50, 15, 15, BLACK);
+        display.fillRect(108, 50, 15, 15, BLACK);
         display.drawBitmap(108, 50, image_usb_Saraarray, 15, 15, 1);
       }
     #endif

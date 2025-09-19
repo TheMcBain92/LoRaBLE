@@ -18,6 +18,11 @@ To build LoraBluetooth you may need various libraries into your Arduino IDE.  Fo
 These Libraries can be added via the Ardunio IDE menu: Sketch -> Include Library -> Manage Libraries…
 And then searching the name of each Library that you need/
 
+Buttons
+=======
+On T-Beam Devices the Middle button toggles the display. The is to prevent burn in of the static elements of the gui.
+
+
 Serial Protocol
 ===============
 
@@ -65,6 +70,11 @@ Bandwidth value strings can be 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 2
 
 History
 =======
+
+19/09/2025 V1.2
+- Added Battery Information to the Display. Charging, 100%, 50%, 25%, Empty, Error & USB Power Only.
+- Added GPS Satellites in View Number to Display.
+- Added Screen Saver. Display can be turned off using the middle button on T-Beam's
 
 13/09/2025	V1.1
 - Updated to Support T-Beam v1.2

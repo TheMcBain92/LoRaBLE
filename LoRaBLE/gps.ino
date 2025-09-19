@@ -102,6 +102,19 @@ void SetPowerMode(byte SavePower)
 
 void SetupGPS(void)
 {
+  static const unsigned char PROGMEM image_gps_Saraarray[] = {
+    0x20, 0x00, 
+    0x20, 0x00, 
+    0x60, 0x00, 
+    0x60, 0x00, 
+    0x70, 0x00, 
+    0x38, 0x00, 
+    0x7f, 0x80, 
+    0xee, 0x00, 
+    0xc0, 0x00, 
+    0xc0, 0x00, 
+    0xc0, 0x00
+  };
   // Switch GPS on, if we have control of that
 #ifdef GPS_ON
   pinMode(GPS_ON, OUTPUT);
@@ -110,6 +123,9 @@ void SetupGPS(void)
 
   Serial.println("Open GPS port");
   GPSSerial.begin(9600, SERIAL_8N1, GPS_TX, GPS_RX); // Pins for T-Beam v0.8 (3 push buttons) and up
+  // if (GPSSerial.begin(9600, SERIAL_8N1, GPS_TX, GPS_RX))
+  display.drawBitmap(115, 0, image_gps_Saraarray, 9, 11, 1);
+  display.display();
 }
 
 int GPSChecksumOK(char *Buffer, int Count)
@@ -178,6 +194,7 @@ void ProcessNMEA(char *Buffer, int Count)
         }
         
         GPS.Satellites = Satellites;
+
       }
       
       // Serial.print(GPS.Hours); Serial.print(":"); Serial.print(GPS.Minutes); Serial.print(":"); Serial.print(GPS.Seconds);Serial.print(" - ");
@@ -188,7 +205,9 @@ void ProcessNMEA(char *Buffer, int Count)
                                                                      GPS.Latitude, GPS.Longitude, GPS.Altitude,
                                                                      GPS.Speed, GPS.Direction, GPS.Satellites);
       SendToHosts(Line);
-
+      display.setCursor(115,13);
+      display.print(GPS.Satellites);
+      display.display();
     }
     else if (strncmp((char *)Buffer+3, "GSV", 3) == 0)
     {
